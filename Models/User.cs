@@ -1,4 +1,4 @@
-﻿using RaceDay.API_.Models;
+﻿using RaceDay.API.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

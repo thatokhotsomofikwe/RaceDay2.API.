@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RaceDay.API.Models;
-
+using Route = RaceDay.API.Models.Route;
 namespace RaceDay.API.Data
 {
     public class AppDbContext : DbContext
