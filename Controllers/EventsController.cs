@@ -4,16 +4,16 @@ namespace RaceDay.API_.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class EventsController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<EventsController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public EventsController(ILogger<EventsController> logger)
         {
             _logger = logger;
         }
