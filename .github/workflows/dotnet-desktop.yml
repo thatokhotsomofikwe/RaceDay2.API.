@@ -1,8 +1,8 @@
 - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore RaceDay.API..slnx
 
     - name: Build project
-      run: dotnet build --no-restore --configuration Release
+      run: dotnet build RaceDay.API..slnx --no-restore --configuration Release
 
     - name: Run Unit Tests
-      run: dotnet test --no-build --configuration Release --verbosity normal
+      run: dotnet test RaceDay.Tests/RaceDay.Tests.csproj --no-build --configuration Release --verbosity normal
