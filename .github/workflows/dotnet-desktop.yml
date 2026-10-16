@@ -1,0 +1,25 @@
+- name: Locate project file
+        id: project
+        shell: bash
+        run: |
+          echo "Searching for C# project files..."
+
+          find . -type f -name '*.csproj' \
+            -not -path '*/bin/*' \
+            -not -path '*/obj/*' \
+            -print
+
+          PROJECT=$(find . -type f -name '*.csproj' \
+            -not -path '*/bin/*' \
+            -not -path '*/obj/*' \
+            ! -iname '*test*.csproj' \
+            -print -quit)
+
+          if [ -z "$PROJECT" ]; then
+            echo "::error::No project file (.csproj) found."
+            echo "Check that the actual project files are committed to GitHub."
+            exit 1
+          fi
+
+          echo "Found project: $PROJECT"
+          echo "path=$PROJECT" >> "$GITHUB_OUTPUT"
