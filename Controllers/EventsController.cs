@@ -86,7 +86,7 @@ namespace RaceDay.API.Controllers
 
             if (ev.OrganiserID != userId)
             {
-                return Forbid();
+                return StatusCode(StatusCodes.Status403Forbidden);
             }
 
             ev.EventName = updatedEvent.EventName;
@@ -116,7 +116,7 @@ namespace RaceDay.API.Controllers
 
             if (ev.OrganiserID != userId)
             {
-                return Forbid();
+                return StatusCode(StatusCodes.Status403Forbidden);
             }
 
             _context.Events.Remove(ev);
