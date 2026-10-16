@@ -1,33 +1,128 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RaceDay.API.Data;
+using RaceDay.API.Models;
+using RaceDay.API.Security;
 
-namespace RaceDay.API_.Controllers
+namespace RaceDay.API.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class EventsController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private readonly AppDbContext _context;
 
-        private readonly ILogger<EventsController> _logger;
-
-        public EventsController(ILogger<EventsController> logger)
+        public EventsController(AppDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        // GET: api/events (Public)
+        [HttpGet]
+        public async Task<IActionResult> GetEvents()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var events = await _context.Events
+                .Include(e => e.Categories)
+                .ToListAsync();
+
+            return Ok(events);
+        }
+
+        // GET: api/events/5 (Public)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetEvent(int id)
+        {
+            var ev = await _context.Events
+                .Include(e => e.Categories)
+                .FirstOrDefaultAsync(e => e.EventID == id);
+
+            if (ev == null)
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                return NotFound();
+            }
+
+            return Ok(ev);
+        }
+
+        // POST: api/events (Organiser only)
+        [HttpPost]
+        [RoleAuthorize("Organiser")]
+        public async Task<IActionResult> CreateEvent(
+            [FromBody] Event newEvent)
+        {
+            var userId = HttpContext.Session.GetInt32("UserID");
+
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            newEvent.OrganiserID = userId.Value;
+            newEvent.Status = "Upcoming";
+
+            _context.Events.Add(newEvent);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(
+                nameof(GetEvent),
+                new { id = newEvent.EventID },
+                newEvent);
+        }
+
+        // PUT: api/events/5 (Organiser only)
+        [HttpPut("{id}")]
+        [RoleAuthorize("Organiser")]
+        public async Task<IActionResult> UpdateEvent(
+            int id,
+            [FromBody] Event updatedEvent)
+        {
+            var userId = HttpContext.Session.GetInt32("UserID");
+            var ev = await _context.Events.FindAsync(id);
+
+            if (ev == null)
+            {
+                return NotFound();
+            }
+
+            if (ev.OrganiserID != userId)
+            {
+                return Forbid();
+            }
+
+            ev.EventName = updatedEvent.EventName;
+            ev.Description = updatedEvent.Description;
+            ev.EventDate = updatedEvent.EventDate;
+            ev.StartTime = updatedEvent.StartTime;
+            ev.Location = updatedEvent.Location;
+            ev.EventType = updatedEvent.EventType;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(ev);
+        }
+
+        // DELETE: api/events/5 (Organiser only)
+        [HttpDelete("{id}")]
+        [RoleAuthorize("Organiser")]
+        public async Task<IActionResult> DeleteEvent(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserID");
+            var ev = await _context.Events.FindAsync(id);
+
+            if (ev == null)
+            {
+                return NotFound();
+            }
+
+            if (ev.OrganiserID != userId)
+            {
+                return Forbid();
+            }
+
+            _context.Events.Remove(ev);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

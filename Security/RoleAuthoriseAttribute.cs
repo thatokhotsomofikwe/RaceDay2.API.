@@ -25,7 +25,7 @@ namespace RaceDay.API.Security
 
             if (_requiredRoles.Length > 0 && !_requiredRoles.Contains(role))
             {
-                context.Result = new ForbidResult(); // 403
+                context.Result = new StatusCodeResult(StatusCodes.Status403Forbidden);
             }
         }
     }
